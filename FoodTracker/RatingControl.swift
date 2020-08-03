@@ -91,4 +91,7 @@ import UIKit
             button.isSelected = index < rating
         }
     }
+    private func() -> Void {
+    
+    }
 }
