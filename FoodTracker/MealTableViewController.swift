@@ -18,8 +18,13 @@ class MealTableViewController: UITableViewController {
         super.viewDidLoad()
         // Use the edit button provided by the table view controler
         navigationItem.leftBarButtonItem = editButtonItem
-        // Load sample data
-        loadSampleMeals()
+        // Load any saved meals, else sample data
+        if let savedMeals = loadMeals() {
+            meals += savedMeals
+        } else {
+            // Load sample data
+            loadSampleMeals()
+        }
     }
 
     // MARK: - Table view data source
@@ -58,6 +63,7 @@ class MealTableViewController: UITableViewController {
         if editingStyle == .delete {
             // Delete the row from the data source
             meals.remove(at: indexPath.row)
+            saveMeals()
             tableView.deleteRows(at: [indexPath], with: .fade)
         } else if editingStyle == .insert {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
@@ -121,6 +127,7 @@ class MealTableViewController: UITableViewController {
                 meals.append(meal)
                 tableView.insertRows(at: [newIndexPath], with: .automatic)
             }
+            saveMeals()
         }
     }
     //MARK: Private Methods
@@ -146,5 +153,16 @@ class MealTableViewController: UITableViewController {
             fatalError("Unable to instantiate meal1")
         }
         meals += [meal1, meal2, meal3, meal4, meal5]
+    }
+    private func saveMeals() {
+        let isSuccessfulSave = NSKeyedArchiver.archiveRootObject(meals, toFile: Meal.ArchiveURL.path)
+        if isSuccessfulSave {
+            os_log("Meals are saved.", log: OSLog.default, type: .debug)
+        } else {
+            os_log("Failed to save meals...", log: OSLog.default, type: .error)
+        }
+    }
+    private func loadMeals() -> [Meal]? {
+        return NSKeyedUnarchiver.unarchiveObject(withFile: Meal.ArchiveURL.path) as? [Meal]
     }
 }
